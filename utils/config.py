@@ -7,11 +7,11 @@ SOS_token = 3
 EOS_token = 2
 UNK_token = 0 
 
-# if (os.cpu_count() > 8):# 获得当前系统的CPU数量
-#     USE_CUDA = True
-# else:
-USE_CUDA = False
-MAX_LENGTH = 10
+if (os.cpu_count() > 8):# 获得当前系统的CPU数量
+    USE_CUDA = True
+else:
+    USE_CUDA = False
+    MAX_LENGTH = 10
 
 parser = argparse.ArgumentParser(description='Seq_TO_Seq Dialogue bAbI')
 parser.add_argument('-ds','--dataset', help='dataset, babi or kvr', required=False)

@@ -5,10 +5,11 @@ from torch import optim
 import torch.nn.functional as F
 import random
 import numpy as np
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import seaborn as sns
 import os
 import json
+import tqdm
 
 from utils.measures import wer, moses_multi_bleu
 from utils.masked_cross_entropy import *
@@ -31,7 +32,6 @@ class GLMP(nn.Module):
         self.max_resp_len = max_resp_len
         self.decoder_hop = n_layers
         self.softmax = nn.Softmax(dim=0)
-
         if path:
             """读取checkpoint"""
             if USE_CUDA:
@@ -72,6 +72,14 @@ class GLMP(nn.Module):
         self.print_every += 1
         return 'L:{:.2f},LE:{:.2f},LG:{:.2f},LP:{:.2f}'.format(print_loss_avg, print_loss_g, print_loss_v, print_loss_l)
 
+    def return_loss(self):
+        print_loss_avg = self.loss / self.print_every
+        print_loss_g = self.loss_g / self.print_every
+        print_loss_v = self.loss_v / self.print_every
+        print_loss_l = self.loss_l / self.print_every
+        self.print_every += 1
+        return print_loss_avg, print_loss_g, print_loss_v, print_loss_l
+
     def save_model(self, dec_type):
         name_data = "KVR/" if self.task == '' else "BABI/"
         layer_info = str(self.n_layers)
@@ -110,8 +118,6 @@ class GLMP(nn.Module):
         # Loss calculation and backpropagation
         # print("gi:", global_pointer)
 
-        # 论文中global pointer的维度为kb长度+对话历史长度，但代码里只有对话历史长度
-        # 即global pointer中只含对话历史词的概率分布，标签也只打对话历史
         loss_g = self.criterion_bce(global_pointer, data['selector_index'])
 
         loss_v = masked_cross_entropy(
@@ -202,7 +208,7 @@ class GLMP(nn.Module):
         dialog_acc_dict = {}
         F1_pred, F1_cal_pred, F1_nav_pred, F1_wet_pred = 0, 0, 0, 0
         F1_count, F1_cal_count, F1_nav_count, F1_wet_count = 0, 0, 0, 0
-        pbar = tqdm(enumerate(dev), total=len(dev))
+        pbar = tqdm(enumerate(dev), total=len(dev), ncols = 100)
         new_precision, new_recall, new_f1_score = 0, 0, 0
 
         if args['dataset'] == 'kvr':
