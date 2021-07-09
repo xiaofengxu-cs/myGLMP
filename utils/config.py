@@ -44,7 +44,7 @@ print(str(args))
 print("USE_CUDA: "+str(USE_CUDA))
 
 LIMIT = int(args["limit"]) 
-MEM_TOKEN_SIZE = 6 if args["dataset"] == 'kvr' else 4
+MEM_TOKEN_SIZE = 6 if args["dataset"] == 'kvr' else (12 if args["dataset"] == 'woz' else 4)
 
 if args["ablationG"]: args["addName"] += "ABG"
 if args["ablationH"]: args["addName"] += "ABH"
